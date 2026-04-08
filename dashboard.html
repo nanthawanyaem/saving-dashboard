@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>กระปุกออมสิน</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #1a1a1a;
+    --surface: #242424;
+    --border: #333;
+    --text: #f0f0f0;
+    --muted: #888;
+    --green: #4ade80;
+    --red: #f87171;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    min-height: 100vh;
+    padding: 20px 16px 60px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .total-card { background: var(--surface); border-radius: 16px; padding: 20px; margin-bottom: 14px; }
+  .total-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .total-amount { font-size: 40px; font-weight: 600; margin-bottom: 4px; }
+  .total-today { font-size: 13px; color: var(--green); }
+
+  .banks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+
+  .bank-card { background: var(--surface); border-radius: 14px; padding: 16px; }
+  .bank-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .bank-name { font-size: 12px; color: var(--muted); flex: 1; }
+  .bank-actions { display: flex; gap: 4px; }
+
+  .edit-btn, .reset-btn {
+    font-size: 11px; color: var(--muted); background: var(--border);
+    border: none; border-radius: 6px; padding: 3px 7px; cursor: pointer;
+  }
+
+  .bank-amount { font-size: 24px; font-weight: 600; margin-bottom: 10px; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 6px; }
+  .progress-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+  .progress-text { font-size: 11px; color: var(--muted); }
+
+  .history-card { background: var(--surface); border-radius: 16px; overflow: hidden; }
+  .history-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 16px 8px; }
+  .history-title { font-size: 13px; color: var(--muted); }
+  .trash-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 4px; }
+
+  .history-item { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-top: 1px solid var(--border); }
+  .history-left { flex: 1; }
+  .history-name { font-size: 15px; font-weight: 500; }
+  .history-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .history-right { display: flex; align-items: center; gap: 10px; }
+  .history-amount { font-size: 15px; font-weight: 600; color: var(--green); }
+  .delete-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 4px; }
+
+  .empty { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
+  .updated { text-align: center; font-size: 11px; color: var(--muted); margin-top: 16px; }
+
+  .live-dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); margin-right: 4px; animation: blink 2s infinite; vertical-align: middle;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+  .modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--surface); border-radius: 16px; padding: 24px; width: 300px; }
+  .modal h3 { font-size: 17px; margin-bottom: 16px; }
+  .modal p { font-size: 13px; color: var(--muted); margin-bottom: 20px; text-align: center; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-field label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+  .modal-field input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; color: var(--text);
+    font-family: 'Sarabun', sans-serif; font-size: 15px;
+  }
+  .modal-field input:focus { outline: none; border-color: var(--green); }
+  .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-cancel {
+    flex: 1; padding: 12px; border-radius: 10px; background: var(--border);
+    border: none; color: var(--text); font-family: 'Sarabun', sans-serif; font-size: 15px; cursor: pointer;
+  }
+  .btn-confirm {
+    flex: 1; padding: 12px; border-radius: 10px; background: var(--green);
+    border: none; color: #111; font-family: 'Sarabun', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .btn-confirm.danger { background: var(--red); color: white; }
+</style>
+</head>
+<body>
+
+<div class="total-card">
+  <div class="total-label">ยอดรวมทั้งหมด</div>
+  <div class="total-amount" id="totalAmount">฿ 0</div>
+  <div class="total-today" id="todayAmount"><span class="live-dot"></span>กำลังโหลด...</div>
+</div>
+
+<div class="banks-grid" id="banksGrid"></div>
+
+<div class="history-card">
+  <div class="history-header">
+    <div class="history-title">ล่าสุด</div>
+    <button class="trash-btn" onclick="confirmClearAll()">🗑️</button>
+  </div>
+  <div id="historyList"><div class="empty">ยังไม่มีประวัติ</div></div>
+</div>
+
+<div class="updated" id="updatedAt"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+  // ===== แก้ตรงนี้ =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyAFYrqnssSN_rz1DbIAO-ZCVBlYQC1V7f0",
+    databaseURL: "https://saving-d52a4-default-rtdb.asia-southeast1.firebasedatabase.app",
+  };
+
+  const defaultBanks = {
+    bank1: { name: "ท่องเที่ยว",    goal: 1000,   color: "#4ade80" },
+    bank2: { name: "ซื้อโทรศัพท์",  goal: 15000,  color: "#818cf8" },
+    bank3: { name: "สำรองฉุกเฉิน", goal: 100000, color: "#f97316" },
+    bank4: { name: "ของขวัญ",      goal: 500,    color: "#facc15" },
+    bank5: { name: "บุฟเฟต์",      goal: 3000,   color: "#38bdf8" },
+    bank6: { name: "ลงทุน",        goal: 6000,   color: "#c084fc" },
+  };
+  // =====================
+
+  let banks = JSON.parse(localStorage.getItem("banks") || JSON.stringify(defaultBanks));
+  for (const key of Object.keys(defaultBanks)) {
+    if (banks[key]) banks[key].color = defaultBanks[key].color;
+  }
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  let prevData = {};
+  let todayAdded = 0;
+
+  function saveBanks() { localStorage.setItem("banks", JSON.stringify(banks)); }
+
+  function renderBanks(data) {
+    const grid = document.getElementById("banksGrid");
+    grid.innerHTML = "";
+    let total = 0;
+
+    for (const [key, info] of Object.entries(banks)) {
+      const amount = data[key]?.amount || 0;
+      total += amount;
+      const pct = Math.min(100, Math.round((amount / info.goal) * 100));
+
+      const card = document.createElement("div");
+      card.className = "bank-card";
+      card.innerHTML = `
+        <div class="bank-header">
+          <div class="bank-name">${info.name}</div>
+          <div class="bank-actions">
+            <button class="edit-btn" onclick="openEditModal('${key}')">✏️</button>
+            <button class="reset-btn" onclick="confirmReset('${key}', '${info.name}')">↺</button>
+          </div>
+        </div>
+        <div class="bank-amount">฿ ${amount % 1 === 0 ? Math.round(amount).toLocaleString() : amount.toFixed(2)}</div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%;background:${info.color}"></div>
+        </div>
+        <div class="progress-text">${pct}% จาก ฿${info.goal.toLocaleString()}</div>
+      `;
+      grid.appendChild(card);
+    }
+
+    document.getElementById("totalAmount").textContent = `฿ ${total % 1 === 0 ? Math.round(total).toLocaleString() : total.toFixed(2)}`;
+    document.getElementById("todayAmount").innerHTML = todayAdded > 0
+      ? `<span class="live-dot"></span>+฿${todayAdded} วันนี้`
+      : `<span class="live-dot"></span>Live`;
+    document.getElementById("updatedAt").textContent = `อัพเดต ${new Date().toLocaleTimeString('th-TH')}`;
+  }
+
+  function renderHistory(historyData) {
+    const list = document.getElementById("historyList");
+    if (!historyData || Object.keys(historyData).length === 0) {
+      list.innerHTML = `<div class="empty">ยังไม่มีประวัติการหยอด</div>`;
+      return;
+    }
+
+    // เรียงลำดับจากใหม่ไปเก่า
+    const items = Object.entries(historyData)
+      .sort((a, b) => b[0] - a[0])
+      .slice(0, 20);
+
+    list.innerHTML = items.map(([key, h]) => `
+      <div class="history-item">
+        <div class="history-left">
+          <div class="history-name">${h.name}</div>
+          <div class="history-time">${new Date(parseInt(key) * 1000).toLocaleTimeString('th-TH')}</div>
+        </div>
+        <div class="history-right">
+          <div class="history-amount">+฿${h.amount}</div>
+          <button class="delete-btn" onclick="confirmDeleteItem('${key}')">✕</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  // ฟัง bank data
+  const dataRef = ref(db, "/");
+  onValue(dataRef, (snapshot) => {
+    const data = snapshot.val() || {};
+
+    // คำนวณ todayAdded
+    for (const [key] of Object.entries(banks)) {
+      const newAmount = data[key]?.amount || 0;
+      const oldAmount = prevData[key]?.amount || 0;
+      if (newAmount > oldAmount && oldAmount > 0) {
+        todayAdded += Math.round(newAmount - oldAmount);
+      }
+    }
+
+    prevData = data;
+    renderBanks(data);
+    renderHistory(data.history);
+  });
+
+  window.closeModal = () => document.getElementById("modalOverlay").classList.remove("show");
+
+  window.openEditModal = (key) => {
+    const info = banks[key];
+    document.getElementById("modalContent").innerHTML = `
+      <h3>แก้ไขกระปุก</h3>
+      <div class="modal-field">
+        <label>ชื่อกระปุก</label>
+        <input type="text" id="editName" value="${info.name}">
+      </div>
+      <div class="modal-field">
+        <label>เป้าหมาย (บาท)</label>
+        <input type="number" id="editGoal" value="${info.goal}">
+      </div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+        <button class="btn-confirm" onclick="saveEdit('${key}')">บันทึก</button>
+      </div>
+    `;
+    document.getElementById("modalOverlay").classList.add("show");
+  };
+
+  window.saveEdit = (key) => {
+    const name = document.getElementById("editName").value.trim();
+    const goal = parseInt(document.getElementById("editGoal").value);
+    if (!name || !goal) return;
+    banks[key].name = name;
+    banks[key].goal = goal;
+    saveBanks();
+    closeModal();
+    renderBanks(prevData);
+  };
+
+  window.confirmReset = (key, name) => {
+    document.getElementById("modalContent").innerHTML = `
+      <h3>รีเซต ${name}</h3>
+      <p>ยอดเงินของ "${name}" จะถูกรีเซตเป็น ฿0</p>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+        <button class="btn-confirm danger" onclick="doReset('${key}')">รีเซต</button>
+      </div>
+    `;
+    document.getElementById("modalOverlay").classList.add("show");
+  };
+
+  window.doReset = (key) => {
+    set(ref(db, `/${key}`), { amount: 0, weight: 0 });
+    closeModal();
+  };
+
+  window.confirmDeleteItem = (key) => {
+    document.getElementById("modalContent").innerHTML = `
+      <h3>ลบรายการนี้</h3>
+      <p>ลบรายการประวัตินี้ออกไหม?</p>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+        <button class="btn-confirm danger" onclick="doDeleteItem('${key}')">ลบ</button>
+      </div>
+    `;
+    document.getElementById("modalOverlay").classList.add("show");
+  };
+
+  window.doDeleteItem = (key) => {
+    remove(ref(db, `/history/${key}`));
+    closeModal();
+  };
+
+  window.confirmClearAll = () => {
+    document.getElementById("modalContent").innerHTML = `
+      <h3>ลบประวัติทั้งหมด</h3>
+      <p>ประวัติการหยอดทั้งหมดจะถูกลบออก</p>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+        <button class="btn-confirm danger" onclick="doClearAll()">ลบทั้งหมด</button>
+      </div>
+    `;
+    document.getElementById("modalOverlay").classList.add("show");
+  };
+
+  window.doClearAll = () => {
+    remove(ref(db, "/history"));
+    closeModal();
+  };
+
+  document.getElementById("modalOverlay").addEventListener("click", (e) => {
+    if (e.target === document.getElementById("modalOverlay")) closeModal();
+  });
+</script>
+</body>
+</html>
