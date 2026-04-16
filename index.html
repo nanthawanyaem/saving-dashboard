@@ -8,12 +8,12 @@
   @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap');
 
   :root {
-    --bg: #1a1a1a;
-    --surface: #242424;
-    --border: #333;
-    --text: #f0f0f0;
-    --muted: #888;
-    --green: #4ade80;
+    --bg: #f2faf6;
+    --surface: #ffffff;
+    --border: #c8e6d4;
+    --text: #1b4332;
+    --muted: #74a58a;
+    --green: #52b788;
     --red: #f87171;
   }
 
@@ -37,6 +37,15 @@
   .banks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
 
   .bank-card { background: var(--surface); border-radius: 14px; padding: 16px; }
+  
+  .bank-card:nth-child(1) { background: #f5dada; }
+  .bank-card:nth-child(2) { background: #fbefde; }
+  .bank-card:nth-child(3) { background: #d9edcc; }
+  .bank-card:nth-child(4) { background: #dfeffd; }
+  .bank-card:nth-child(5) { background: #f2e6f9; }
+  .bank-card:nth-child(6) { background: #fbf3dd; }
+
+
   .bank-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .bank-name { font-size: 12px; color: var(--muted); flex: 1; }
   .bank-actions { display: flex; gap: 4px; }
@@ -99,27 +108,197 @@
     border: none; color: #111; font-family: 'Sarabun', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer;
   }
   .btn-confirm.danger { background: var(--red); color: white; }
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #fff;
+    border-top: 1px solid #e8f5ee;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 8px 24px 16px;
+    z-index: 50;
+  }
+  .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; border: none; background: none; }
+  .nav-btn.center { background: #52b788; width: 58px; height: 58px; border-radius: 50%; margin-top: -20px; box-shadow: 0 4px 16px rgba(82,183,136,.4); padding: 0; justify-content: center; }
+  .nav-icon { font-size: 22px; color: #bbb; }
+  .nav-label { font-size: 10px; color: #bbb; font-weight: 500; }
+  .nav-btn.active .nav-icon { color: #2d6a4f; }
+  .nav-btn.active .nav-label { color: #2d6a4f; }
+  .nav-btn.center .nav-icon { color: #fff; font-size: 24px; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+
+
+
 </style>
 </head>
 <body>
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="btn-home">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Home</span>
+  </button>
+  <button class="nav-btn center" id="btn-dashboard">
+    <span class="nav-icon">🏦</span>
+  </button>
+  <button class="nav-btn" id="btn-learn">
+    <span class="nav-icon">📚</span>
+    <span class="nav-label">Lesson</span>
+  </button>
+</nav>
 
-<div class="total-card">
-  <div class="total-label">ยอดรวมทั้งหมด</div>
-  <div class="total-amount" id="totalAmount">฿ 0</div>
-  <div class="total-today" id="todayAmount"><span class="live-dot"></span>กำลังโหลด...</div>
-</div>
+<div class="page active" id="page-home">
 
-<div class="banks-grid" id="banksGrid"></div>
-
-<div class="history-card">
-  <div class="history-header">
-    <div class="history-title">ล่าสุด</div>
-    <button class="trash-btn" onclick="confirmClearAll()">🗑️</button>
+  <!-- โปรไฟล์ -->
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 8px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:42px;height:42px;border-radius:50%;background:#b7e4c7;display:flex;align-items:center;justify-content:center;font-size:22px;">🌸</div>
+      <div>
+        <div style="font-size:11px;color:#74a58a;">Hello,</div>
+        <div style="font-size:16px;font-weight:700;color:#1b4332;">MONEYBLOOM ✨</div>
+      </div>
+    </div>
+    <div style="width:36px;height:36px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:1px solid #e0f0e8;">🔔</div>
   </div>
-  <div id="historyList"><div class="empty">ยังไม่มีประวัติ</div></div>
+
+  <!-- Summary card -->
+  <div style="margin:0 16px 14px;background:#2d6a4f;border-radius:20px;padding:16px 18px;">
+    <div style="font-size:11px;color:rgba(255,255,255,.65);margin-bottom:3px;">Total Savings</div>
+    <div style="font-size:32px;font-weight:800;color:#fff;margin-bottom:10px;" id="homeTotal">฿ 0</div>
+    <div style="display:flex;gap:8px;">
+      <div style="flex:1;background:rgba(255,255,255,.12);border-radius:10px;padding:8px;text-align:center;">
+        <div style="font-size:9px;color:rgba(255,255,255,.65);">This Month</div>
+        <div style="font-size:13px;font-weight:700;color:#fff;" id="monthTotal">฿0</div>
+      </div>
+      <div style="flex:1;background:rgba(255,255,255,.12);border-radius:10px;padding:8px;text-align:center;">
+        <div style="font-size:9px;color:rgba(255,255,255,.65);">Streak</div>
+        <div style="font-size:13px;font-weight:700;color:#fff;">— 🔥</div>
+      </div>
+      <div style="flex:1;background:rgba(255,255,255,.12);border-radius:10px;padding:8px;text-align:center;">
+        <div style="font-size:9px;color:rgba(255,255,255,.65);">Jars</div>
+        <div style="font-size:13px;font-weight:700;color:#74c69d;">6 pcs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div style="padding:0 16px;margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:600;color:#1b4332;margin-bottom:10px;">Quick Actions</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;" onclick="showPage('page-home')">
+        <div style="width:50px;height:50px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid #e0f0e8;">🏦</div>
+        <div style="font-size:9px;color:#74a58a;text-align:center;">Jar</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+        <div style="width:50px;height:50px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid #e0f0e8;">📊</div>
+        <div style="font-size:9px;color:#74a58a;text-align:center;">Stat</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+        <div style="width:50px;height:50px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid #e0f0e8;">🏛</div>
+        <div style="font-size:9px;color:#74a58a;text-align:center;">Bank</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+        <div style="width:50px;height:50px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid #e0f0e8;">🎯</div>
+        <div style="font-size:9px;color:#74a58a;text-align:center;">Goal</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- เป้าหมายใกล้ถึง -->
+  <div style="padding:0 16px;margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:600;color:#1b4332;margin-bottom:10px;">Goals Near Target</div>
+    <div id="goalList"></div>
+  </div>
+
+  <!-- เคล็ดลับ -->
+  <div style="margin:0 16px;background:#e8f5ee;border-radius:16px;padding:14px;display:flex;align-items:flex-start;gap:10px;">
+    <span style="font-size:22px;">💡</span>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:#1b4332;margin-bottom:3px;">Tip of the Day</div>
+      <div style="font-size:11px;color:#52b788;line-height:1.6;">Try saving 10% of your income every day — in just 3 months you'll have an emergency fund!</div>
+    </div>
+  </div>
+
 </div>
 
-<div class="updated" id="updatedAt"></div>
+<div class="page" id="page-dashboard">
+  <div class="total-card">
+    <div class="total-label">Total</div>
+    <div class="total-amount" id="totalAmount">฿ 0</div>
+    <div class="total-today" id="todayAmount"><span class="live-dot"></span>กำลังโหลด...</div>
+  </div>
+
+  <div class="banks-grid" id="banksGrid"></div>
+
+  <div class="history-card">
+    <div class="history-header">
+      <div class="history-title">History</div>
+      <button class="trash-btn" onclick="confirmClearAll()">🗑️</button>
+    </div>
+    <div id="historyList"><div class="empty">ยังไม่มีประวัติ</div></div>
+  </div>
+
+  <div class="updated" id="updatedAt"></div>
+</div>
+
+<div class="page" id="page-learn">
+  <div style="padding:20px 16px 12px;">
+    <div style="font-size:22px;font-weight:800;color:#2d6a4f;margin-bottom:4px;">Financial Lessons</div>
+    <div style="font-size:13px;color:#74a58a;">Learn to save money wisely</div>
+  </div>
+
+  <!-- Featured -->
+  <div style="margin:0 16px 16px;background:#2d6a4f;border-radius:20px;padding:20px;position:relative;overflow:hidden;">
+    <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.08);"></div>
+    <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px;">Featured Lesson</div>
+    <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Why save money?</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.5;margin-bottom:14px;">Learn how saving money from a young age helps build a secure future.</div>
+    <div style="display:inline-block;background:rgba(255,255,255,.2);color:#fff;font-size:12px;font-weight:600;padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.3);">Start Learning →</div>
+  </div>
+
+  <!-- Grid บทเรียน -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;">
+    <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid #e0f0e8;">
+      <div style="font-size:28px;margin-bottom:8px;">🐷</div>
+      <div style="font-size:13px;font-weight:600;color:#1b4332;margin-bottom:4px;">Saving Money</div>
+      <div style="font-size:11px;color:#74a58a;line-height:1.4;margin-bottom:8px;">Save a little at a time and build good habits starting today.</div>
+      <span style="background:#d4f1c0;color:#2d6a1a;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;">Easy</span>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid #e0f0e8;">
+      <div style="font-size:28px;margin-bottom:8px;">🎯</div>
+      <div style="font-size:13px;font-weight:600;color:#1b4332;margin-bottom:4px;">Setting Goals</div>
+      <div style="font-size:11px;color:#74a58a;line-height:1.4;margin-bottom:8px;">How to set saving goals that are actually achievable.</div>
+      <span style="background:#d4f1c0;color:#2d6a1a;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;"> Easy</span>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid #e0f0e8;">
+      <div style="font-size:28px;margin-bottom:8px;">💰</div>
+      <div style="font-size:13px;font-weight:600;color:#1b4332;margin-bottom:4px;">Income & Expenses</div>
+      <div style="font-size:11px;color:#74a58a;line-height:1.4;margin-bottom:8px;">How to budget so you always have money left to save each month.</div>
+      <span style="background:#ffe8c8;color:#7a4f1a;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;">Medium</span>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid #e0f0e8;">
+      <div style="font-size:28px;margin-bottom:8px;">📈</div>
+      <div style="font-size:13px;font-weight:600;color:#1b4332;margin-bottom:4px;">Compound Interest</div>
+      <div style="font-size:11px;color:#74a58a;line-height:1.4;margin-bottom:8px;">How your money grows over time when you let it work for you.</div>
+      <span style="background:#ffe8c8;color:#7a4f1a;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;">Medium</span>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid #e0f0e8;">
+      <div style="font-size:28px;margin-bottom:8px;">🛡</div>
+      <div style="font-size:13px;font-weight:600;color:#1b4332;margin-bottom:4px;">Emergency Fund</div>
+      <div style="font-size:11px;color:#74a58a;line-height:1.4;margin-bottom:8px;">Why you need one and how much you should set aside.</div>
+      <span style="background:#ffe8c8;color:#7a4f1a;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;">Medium</span>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid #e0f0e8;">
+      <div style="font-size:28px;margin-bottom:8px;">🌱</div>
+      <div style="font-size:13px;font-weight:600;color:#1b4332;margin-bottom:4px;">Investing</div>
+      <div style="font-size:11px;color:#74a58a;line-height:1.4;margin-bottom:8px;">How to start investing safely and grow your wealth.</div>
+      <span style="background:#e8d5f5;color:#5a2a7a;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;">Hard</span>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modalContent"></div>
@@ -136,27 +315,91 @@
   };
 
   const defaultBanks = {
-    bank1: { name: "ท่องเที่ยว",    goal: 500,   color: "#4ade80" },
-    bank2: { name: "ซื้อโทรศัพท์",  goal: 12000,  color: "#818cf8" },
-    bank3: { name: "สำรองฉุกเฉิน", goal: 1000, color: "#f97316" },
-    bank4: { name: "ของขวัญ",      goal: 500,    color: "#facc15" },
-    bank5: { name: "บุฟเฟต์",      goal: 3000,   color: "#38bdf8" },
-    bank6: { name: "ลงทุน",        goal: 300,   color: "#c084fc" },
+    bank1: { name: "Necessities",    goal: 100,   color: "#E4A0B7" },
+    bank2: { name: "Play",  goal: 50,  color: "#818cf8" },
+    bank3: { name: "Freedom", goal: 300, color: "#f97316" },
+    bank4: { name: "Education",      goal: 2000,    color: "#facc15" },
+    bank5: { name: "Long-term Goals",      goal: 3000,   color: "#38bdf8" },
+    bank6: { name: "Giving",        goal: 400,   color: "#c084fc" },
   };
   // =====================
 
-  let banks = JSON.parse(localStorage.getItem("banks") || JSON.stringify(defaultBanks));
-  for (const key of Object.keys(defaultBanks)) {
-    if (banks[key]) banks[key].color = defaultBanks[key].color;
-  }
+  let banks = JSON.parse(JSON.stringify(defaultBanks));
+
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
+
+  onValue(ref(db, "/settings/banks"), (snap) => {
+    if (snap.val()) {
+      const saved = snap.val();
+      for (const k of Object.keys(defaultBanks)) {
+        if (saved[k]) {
+          banks[k].name = saved[k].name || banks[k].name;
+          banks[k].goal = saved[k].goal || banks[k].goal;
+        }
+      }
+    }
+  });
+
   let prevData = {};
   let todayAdded = 0;
 
-  function saveBanks() { localStorage.setItem("banks", JSON.stringify(banks)); }
+  function saveBanks() {
+  const toSave = {};
+  for (const [k, v] of Object.entries(banks)) {
+    toSave[k] = { name: v.name, goal: v.goal };
+  }
+  set(ref(db, "/settings/banks"), toSave);
+  }
+  window.showPage = (id) => {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(id)?.classList.add("active");
+  };
 
+  document.getElementById("btn-home").addEventListener("click", () => showPage("page-home"));
+  document.getElementById("btn-dashboard").addEventListener("click", () => showPage("page-dashboard"));
+  document.getElementById("btn-learn").addEventListener("click", () => showPage("page-learn"));
+
+  function renderHome(data) {
+  let total = 0;
+  for (const [key] of Object.entries(banks)) {
+    total += data[key]?.amount || 0;
+  }
+  const homeTotal = document.getElementById("homeTotal");
+  if (homeTotal) homeTotal.textContent = `฿ ${Math.round(total).toLocaleString()}`;
+
+  // เป้าหมายใกล้ถึง (เรียงตาม % มากสุด)
+  const goalList = document.getElementById("goalList");
+  if (!goalList) return;
+  const sorted = Object.entries(banks)
+    .map(([key, info]) => ({
+      key, info,
+      amount: data[key]?.amount || 0,
+      pct: Math.min(100, Math.round(((data[key]?.amount || 0) / info.goal) * 100))
+    }))
+    .filter(g => g.pct > 0)
+    .sort((a, b) => b.pct - a.pct)
+    .slice(0, 2);
+
+  goalList.innerHTML = sorted.map(g => `
+    <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1px solid #e0f0e8;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:18px;">${g.info.icon || "🏦"}</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#1b4332;">${g.info.name}</div>
+            <div style="font-size:10px;color:#74a58a;">฿${Math.round(g.amount).toLocaleString()} from ฿${g.info.goal.toLocaleString()}</div>
+          </div>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:#52b788;">${g.pct}%</div>
+      </div>
+      <div style="height:6px;background:#f0f8f4;border-radius:3px;">
+        <div style="width:${g.pct}%;height:100%;background:#52b788;border-radius:3px;transition:width .6s;"></div>
+      </div>
+    </div>
+  `).join("") || `<div style="text-align:center;color:#74a58a;font-size:13px;padding:16px;">ยังไม่มีเป้าหมายที่คืบหน้า</div>`;
+}
   function renderBanks(data) {
     const grid = document.getElementById("banksGrid");
     grid.innerHTML = "";
@@ -181,7 +424,7 @@
         <div class="progress-bar">
           <div class="progress-fill" style="width:${pct}%;background:${info.color}"></div>
         </div>
-        <div class="progress-text">${pct}% จาก ฿${info.goal.toLocaleString()}</div>
+        <div class="progress-text">${pct}% from ฿${info.goal.toLocaleString()}</div>
       `;
       grid.appendChild(card);
     }
@@ -209,7 +452,7 @@
       <div class="history-item">
         <div class="history-left">
           <div class="history-name">${h.name}</div>
-          <div class="history-time">${new Date(parseInt(key) * 1000).toLocaleTimeString('th-TH')}</div>
+          <div class="history-time">${new Date(parseInt(key) * 1000).toLocaleTimeString('th-TH', {timeZone: 'Asia/Bangkok', hour12: True})}</div>
         </div>
         <div class="history-right">
           <div class="history-amount">+฿${h.amount}</div>
@@ -236,6 +479,7 @@
     prevData = data;
     renderBanks(data);
     renderHistory(data.history);
+    renderHome(data); 
   });
 
   window.closeModal = () => document.getElementById("modalOverlay").classList.remove("show");
